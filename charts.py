@@ -1,4 +1,8 @@
+import datetime
+from math import floor
+
 import matplotlib.pyplot as plt
+
 
 def plot_stuff(data, extractor, xrange, ticks, position, label, labels=None):
     stuff = {}
@@ -13,20 +17,25 @@ def plot_stuff(data, extractor, xrange, ticks, position, label, labels=None):
         for h in range(xrange):
             stuff[brand][h] = 0
         for t in data[brand]:
-            # h = t['time'].hour
             h = extractor(t)
             stuff[brand][h] += 1
         plt.plot(list(stuff[brand].values()))
 
-def plot_stuff_per_hour(data, extractor, extractor2, xrange, ticks, position, label, labels=None):
+def plot_stuff_per_period(data, extractor, extractor2, xrange, ticks, position, label, labels=None, log=False, position3=None):
     stuff = {}
     tts = {}
-    plt.subplot(position)
+    if position3:
+        s = plt.subplot(*position3)
+    else:
+        s = plt.subplot(position)
     plt.title(label)
+    if log:
+        plt.yscale('log')
     if labels:
         plt.xticks(ticks=ticks, labels=labels)
     else:
         plt.xticks(ticks=ticks)
+
     for brand in data.keys():
         stuff[brand] = {}
         tts[brand] = {}
@@ -41,8 +50,10 @@ def plot_stuff_per_hour(data, extractor, extractor2, xrange, ticks, position, la
         for h in range(xrange):
             try:
                 stuff[brand][h] = stuff[brand][h]/tts[brand][h]
+                # print('{} {} {}'.format(brand, h, stuff[brand][h]))
             except ZeroDivisionError:
                 stuff[brand][h] = 0
+        mx = max(list(stuff[brand].values()))
 
         plt.plot(list(stuff[brand].values()))
 
@@ -66,9 +77,34 @@ def plot_stuff_per_tweet(data, extractor, position, label):
     # plt.plot(list(stuff.values()))
     plt.legend()
     
-# plot_subs_vs_likes(data, subs_data, position, label):
+# def plot_subs_vs_likes(data, subs_data, position, label):
 #     plt.subplot(position)
 #     plt.title(label)
+
+def plot_last_n_periods(data, extractor, extractor2, xrange, ticks, position, label, labels=None, log=False, position3=None):
+    stuff = {}
+    if position3:
+        s = plt.subplot(*position3)
+    else:
+        s = plt.subplot(position)
+    if log:
+        plt.yscale('log')
+        # s.set_ylim(ymin=1)
+    plt.title(label)
+    plt.xticks(ticks=ticks)
+    for brand in data.keys():
+        stuff[brand] = {}
+        for d in range(xrange):
+            stuff[brand][d] = 0
+        for t in data[brand]:
+            d = extractor(t)
+            try:
+                stuff[brand][d] += extractor2(t)
+            except KeyError:
+                pass
+        plt.plot(list(stuff[brand].values()), label=brand)
+    s.set_xticklabels([i for i in range(0, -6, -1)])
+    plt.legend(loc=2, bbox_to_anchor=(-0.6, 1))
 
 
 def get_hour(item):
@@ -79,6 +115,10 @@ def get_weekday(item):
 
 def get_likes(item):
     return item['likes']
+
+def get_months_back(item, offset=0):
+    days_diff = (datetime.date.today() - item['time'].date()).days
+    return floor((days_diff + offset)/30)
 
 
 

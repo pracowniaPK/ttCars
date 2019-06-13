@@ -1,13 +1,14 @@
 h_list = [
     'Mazda_Europe',
     'MazdaUSA',
-    'Honda',
-    'ford',
     'ToyotaMotorCorp',
-    'toyota',
-    'VW',
     'tesla',
     'fiat',
+
+    # 'ford',
+    # 'Honda',
+    # 'toyota',
+    # 'VW',
 ]
 
 h_list_subs = {
